@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast — Real-Time Weather &amp; 5-Day Forecast</title>
+    <meta name="description" content="Get real-time weather data and 5-day forecasts for any city worldwide. Temperature, humidity, wind speed and more.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+
+        
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">🌤️</span>
+                <h1>Weather Forecast</h1>
+            </div>
+            <p class="subtitle" id="currentTime">Real-time weather at your fingertips</p>
+        </header>
+
+        
+        <section class="search-section">
+            <form id="searchForm" th:action="@{/weather}" method="get" class="search-form">
+                <div class="search-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="cityInput" name="city"
+                           placeholder="Search for a city..."
+                           th:value="${city}"
+                           autocomplete="off"
+                           class="search-input">
+                    <button type="submit" id="searchBtn" class="search-btn">Search</button>
+                </div>
+            </form>
+        </section>
+
+        
+        <div th:if="${error}" class="error-message">
+            <span class="error-icon">⚠️</span>
+            <p th:text="${error}">Error message</p>
+        </div>
+
+        
+        <div th:if="${weather == null and error == null}" class="no-data">
+            <div class="no-data-icon">🌍</div>
+            <h2>Explore Weather Worldwide</h2>
+            <p>Enter a city name above to get current weather conditions and a 5-day forecast</p>
+        </div>
+
+        
+        <section th:if="${weather}" class="weather-main">
+            <div class="weather-header">
+                <div class="weather-location">
+                    <h2 class="city-name">
+                        <span th:text="${weather.cityName}">City</span>,
+                        <span class="country" th:text="${weather.country}">Country</span>
+                    </h2>
+                    <p class="weather-desc" th:text="${weather.description}">Weather description</p>
+                </div>
+                <div class="weather-icon-main">
+                    <img th:src="'https://openweathermap.org/img/wn/' + ${weather.icon} + '@4x.png'"
+                         th:alt="${weather.description}"
+                         class="weather-icon-img">
+                </div>
+            </div>
+
+            <div class="weather-body">
+                <div class="temp-section">
+                    <div class="temp-main">
+                        <span class="temp-value" th:text="${#numbers.formatDecimal(weather.temperature, 1, 0)}">25</span>
+                        <span class="temp-unit">°C</span>
+                    </div>
+                    <div class="temp-feels">
+                        Feels like <span th:text="${#numbers.formatDecimal(weather.feelsLike, 1, 0)}">23</span>°C
+                    </div>
+                    <div class="temp-range">
+                        <span class="temp-high">↑ <span th:text="${#numbers.formatDecimal(weather.tempMax, 1, 0)}">28</span>°</span>
+                        <span class="temp-low">↓ <span th:text="${#numbers.formatDecimal(weather.tempMin, 1, 0)}">20</span>°</span>
+                    </div>
+                </div>
+
+                <div class="weather-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">💧</span>
+                        <span class="detail-label">Humidity</span>
+                        <span class="detail-value" th:text="${weather.humidity} + '%'">65%</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">💨</span>
+                        <span class="detail-label">Wind Speed</span>
+                        <span class="detail-value" th:text="${#numbers.formatDecimal(weather.windSpeed, 1, 1)} + ' m/s'">5.2 m/s</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">🌡️</span>
+                        <span class="detail-label">Pressure</span>
+                        <span class="detail-value" th:text="${weather.pressure} + ' hPa'">1013 hPa</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">👁️</span>
+                        <span class="detail-label">Visibility</span>
+                        <span class="detail-value" th:text="${weather.visibility / 1000} + ' km'">10 km</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">🌅</span>
+                        <span class="detail-label">Sunrise</span>
+                        <span class="detail-value" th:text="${weather.sunrise}">6:30 AM</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">🌇</span>
+                        <span class="detail-label">Sunset</span>
+                        <span class="detail-value" th:text="${weather.sunset}">7:45 PM</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+        <section th:if="${forecast}" class="forecast-section">
+            <h3 class="section-title">📅 5-Day Forecast</h3>
+            <div class="forecast-grid">
+                <div th:each="day : ${forecast}" class="forecast-card">
+                    <div class="forecast-day" th:text="${day.dayName}">Monday</div>
+                    <div class="forecast-date" th:text="${day.date}">Jun 5</div>
+                    <img th:src="'https://openweathermap.org/img/wn/' + ${day.icon} + '@2x.png'"
+                         th:alt="${day.description}"
+                         class="forecast-icon">
+                    <div class="forecast-desc" th:text="${day.description}">Clouds</div>
+                    <div class="forecast-temps">
+                        <span class="forecast-high" th:text="${#numbers.formatDecimal(day.tempMax, 1, 0)} + '°'">28°</span>
+                        <span class="forecast-low" th:text="${#numbers.formatDecimal(day.tempMin, 1, 0)} + '°'">20°</span>
+                    </div>
+                    <div class="forecast-details">
+                        <span>💧 <span th:text="${day.humidity} + '%'">65%</span></span>
+                        <span>💨 <span th:text="${#numbers.formatDecimal(day.windSpeed, 1, 1)} + ' m/s'">3.2 m/s</span></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+        <footer class="app-footer">
+            <p>Powered by <a href="https://openweathermap.org" target="_blank" rel="noopener">OpenWeatherMap</a></p>
+            <p class="footer-sub">Weather Forecast Application • Built with Spring Boot &amp; Thymeleaf</p>
+        </footer>
+
+    </div>
+
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>
+
